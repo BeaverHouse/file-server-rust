@@ -42,6 +42,23 @@ Used [Actix Web] & [utoipa] for web framework and Swagger UI.
 
 ## On local development
 
+First, set up the environment variables.
+
+```
+BASE_DIR=
+
+PG__USER=
+PG__PASSWORD=
+PG__HOST=
+PG__PORT=
+PG__DBNAME=
+PG__POOL_MAX_SIZE=
+
+API_KEY=
+```
+
+Then run this command in the terminal:
+
 ```bash
 cargo run
 ```
