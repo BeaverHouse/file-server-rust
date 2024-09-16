@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: austinDev/${{ github.repository }}
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=sha
 
@@ -47,7 +47,6 @@ jobs:
         with:
           repository: BeaverHouse/helm-charts
           token: ${{ secrets.GH_PAT_DEVOPS }}
-          path: file-server
 
       - name: Change values.yaml
         uses: mikefarah/yq@master
