@@ -25,7 +25,7 @@ pub(crate) fn check_api_key(req: &actix_web::HttpRequest) -> Result<(), FileServ
         .unwrap()
         .to_string();
     let api_key = env::var("API_KEY").expect("API_KEY must be set");
-    println!("token: {}, api_key: {}", token, hex::encode(&api_key));
+    // println!("token: {}, api_key: {}", token, hex::encode(&api_key));
 
     if token != format!("Bearer {}", hex::encode(api_key)) {
         return Err(FileServerError::Unauthorized {
