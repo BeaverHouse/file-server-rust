@@ -24,7 +24,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_PAT_ORGANIZATION }}
+          password: ${{ secrets.GH_PAT_DEVOPS }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: BeaverHouse/helm-charts
-          token: ${{ secrets.GH_PAT_ORGANIZATION }}
+          token: ${{ secrets.GH_PAT_DEVOPS }}
           path: file-server
 
       - name: Change values.yaml
@@ -57,7 +57,7 @@ jobs:
       - name: Push to main branch
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          API_TOKEN_GITHUB: ${{ secrets.GH_PAT_ORGANIZATION }}
+          API_TOKEN_GITHUB: ${{ secrets.GH_PAT_DEVOPS }}
         with:
           source-directory: "."
           destination-github-username: "BeaverHouse"
