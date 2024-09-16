@@ -51,7 +51,7 @@ jobs:
       - name: Change values.yaml
         uses: mikefarah/yq@master
         with:
-          cmd: yq -i '.image.tag = "${{ steps.meta.outputs.labels }}"' file-server/values.yaml
+          cmd: yq -i '.image.tag = "${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}"' file-server/values.yaml
 
       - name: Push to main branch
         uses: cpina/github-action-push-to-another-repository@main
