@@ -34,4 +34,4 @@ oracle = "0.6.2"
 deadpool-postgres = { version = "0.14.0", features = ["serde"] }
 tokio-pg-mapper = "0.2.0"
 tokio-pg-mapper-derive = "0.2.0"
-tokio-postgres = "0.7.11"
+tokio-postgres = "0.7.12"
