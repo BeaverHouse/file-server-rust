@@ -16,4 +16,4 @@ COPY --from=builder /app/target/release/file-server-rust .
 
 EXPOSE 8080
 
-CMD ["./file-server-rust"]
+CMD ["/app/file-server-rust"]
