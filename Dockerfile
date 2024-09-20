@@ -1,6 +1,6 @@
 # https://dev.to/mattdark/rust-docker-image-optimization-with-multi-stage-builds-4b6c
 
-FROM rust:latest AS builder
+FROM --platform=linux/amd64 rust:latest AS builder
 WORKDIR /app
 
 COPY Cargo.toml .
