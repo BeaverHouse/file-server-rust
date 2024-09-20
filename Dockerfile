@@ -10,12 +10,10 @@ RUN cargo build --release
 
 RUN strip target/release/file-server-rust
 
-FROM alpine:latest AS release
+FROM gcr.io/distroless/cc-debian12 AS release
 WORKDIR /app
 COPY --from=builder /app/target/release/file-server-rust .
 
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_PORT=8000
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["./file-server-rust"]
