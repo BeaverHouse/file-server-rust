@@ -1,6 +1,6 @@
 # https://dev.to/mattdark/rust-docker-image-optimization-with-multi-stage-builds-4b6c
 
-FROM --platform=linux/amd64 rust:latest AS builder
+FROM rust:latest AS builder
 WORKDIR /app
 
 COPY Cargo.toml .
@@ -10,10 +10,11 @@ RUN cargo build --release
 
 RUN strip target/release/file-server-rust
 
-FROM gcr.io/distroless/cc-debian12 AS release
+# Host is Mac mini, so architecture is arm64
+FROM gcr.io/distroless/cc-debian12:latest-arm64 AS release
 WORKDIR /app
 COPY --from=builder /app/target/release/file-server-rust .
 
 EXPOSE 8080
 
-CMD ["/app/file-server-rust"]
+CMD ["./file-server-rust"]
