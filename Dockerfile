@@ -1,4 +1,5 @@
 # https://dev.to/mattdark/rust-docker-image-optimization-with-multi-stage-builds-4b6c
+# Host is Mac mini, so this script is customized for Mac architecture
 
 FROM rust:latest AS builder
 WORKDIR /app
@@ -6,14 +7,17 @@ WORKDIR /app
 COPY Cargo.toml .
 RUN mkdir src
 COPY src src
-RUN cargo build --release
+RUN apt install gcc-aarch64-linux-gnu
+RUN rustup target add aarch64-unknown-linux-gnu
+RUN cargo build --release --target aarch64-unknown-linux-gnu
 
-RUN strip target/release/file-server-rust
+RUN strip target/aarch64-unknown-linux-gnu/release/file-server-rust
 
-# Host is Mac mini, so architecture is arm64
+
+
 FROM gcr.io/distroless/cc-debian12:latest-arm64 AS release
 WORKDIR /app
-COPY --from=builder /app/target/release/file-server-rust .
+COPY --from=builder /app/target/aarch64-unknown-linux-gnu/release/file-server-rust .
 
 EXPOSE 8080
 
