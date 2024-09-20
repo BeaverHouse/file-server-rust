@@ -7,7 +7,7 @@ WORKDIR /app
 COPY Cargo.toml .
 RUN mkdir src
 COPY src src
-RUN apt install gcc-aarch64-linux-gnu
+RUN apt-get update && apt-get install gcc-aarch64-linux-gnu
 RUN rustup target add aarch64-unknown-linux-gnu
 RUN cargo build --release --target aarch64-unknown-linux-gnu
 
