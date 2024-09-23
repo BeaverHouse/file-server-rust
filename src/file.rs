@@ -71,7 +71,7 @@ async fn upload_alarms(
             message: err.to_string(),
         })?;
 
-    if old_path == constants::NON_EXIST {
+    if old_path == constants::NON_EXIST.to_string() {
         let _ = database::alarms::insert_alarm_info(&connection, id.to_string(), &new_path)
             .await
             .map_err(|err| FileServerError::PostgresDBError {
