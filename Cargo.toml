@@ -35,3 +35,7 @@ deadpool-postgres = { version = "0.14.0", features = ["serde"] }
 tokio-pg-mapper = "0.2.0"
 tokio-pg-mapper-derive = "0.2.0"
 tokio-postgres = "0.7.12"
+
+# S3 Storage
+aws-config = "1.5.6"
+aws-sdk-s3 = "1.51.0"

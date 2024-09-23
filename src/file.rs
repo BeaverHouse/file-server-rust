@@ -1,7 +1,11 @@
 mod json;
 mod utils;
 
+use std::env;
+
 use actix_web::{delete, get, post, web, HttpResponse, Scope};
+use aws_config::{self, BehaviorVersion};
+use aws_sdk_s3::Client;
 use deadpool_postgres::Pool;
 use log;
 use serde_json;
@@ -41,6 +45,14 @@ async fn upload_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
+    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
+    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
+        .accelerate(true)
+        .build();
+    let client = Client::from_conf(config);
+
+    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+
     let connection = pool
         .get()
         .await
@@ -63,7 +75,7 @@ async fn upload_alarms(
         serde_json::to_string(&body.alarms).map_err(|_| FileServerError::SerializationError)?;
     let file_name = format!("alarms_{}_{}.json", id, utils::get_epoch_ms());
     let new_path = utils::get_file_path(constants::ALARM_TABLE_NAME.to_string(), &file_name);
-    let _ = json::save_json(&new_path, json).await;
+    let _ = json::save_json(&client, &bucket_name, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
         .await
@@ -84,7 +96,7 @@ async fn upload_alarms(
             .map_err(|err| FileServerError::PostgresDBError {
                 message: err.to_string(),
             })?;
-        let _ = json::delete_json(&old_path.to_string()).await;
+        let _ = json::delete_json(&client, &bucket_name, &old_path.to_string()).await;
     }
 
     Ok(HttpResponse::Ok().json(StringResponse {
@@ -113,6 +125,14 @@ async fn download_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
+    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
+    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
+        .accelerate(true)
+        .build();
+    let client = Client::from_conf(config);
+
+    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+
     let connection = pool
         .get()
         .await
@@ -132,7 +152,7 @@ async fn download_alarms(
 
     log::info!("Download alarms - ID: {}", id);
 
-    let json_str = json::read_json(&file_path).await?;
+    let json_str = json::read_json(&client, &bucket_name, &file_path).await?;
     let alarms: Vec<Alarm> = serde_json::from_str(&json_str)
         .map_err(|_err| FileServerError::DeserializationError { json_str })?;
 
@@ -162,6 +182,14 @@ async fn delete_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
+    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
+    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
+        .accelerate(true)
+        .build();
+    let client = Client::from_conf(config);
+
+    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+
     let connection = pool
         .get()
         .await
@@ -187,7 +215,7 @@ async fn delete_alarms(
             message: err.to_string(),
         })?;
 
-    let _ = json::delete_json(&file_path.to_string()).await;
+    let _ = json::delete_json(&client, &bucket_name, &file_path.to_string()).await;
 
     Ok(HttpResponse::Ok().json(BaseResponse {
         status: 200,
