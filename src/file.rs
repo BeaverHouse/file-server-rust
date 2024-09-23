@@ -1,11 +1,10 @@
 mod json;
+mod s3;
 mod utils;
 
 use std::env;
 
 use actix_web::{delete, get, post, web, HttpResponse, Scope};
-use aws_config::{self, BehaviorVersion};
-use aws_sdk_s3::Client;
 use deadpool_postgres::Pool;
 use log;
 use serde_json;
@@ -45,13 +44,8 @@ async fn upload_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
-    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
-        .accelerate(true)
-        .build();
-    let client = Client::from_conf(config);
-
-    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
+    let client = s3::get_s3_client().await;
+    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
 
     let connection = pool
         .get()
@@ -125,13 +119,8 @@ async fn download_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
-    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
-        .accelerate(true)
-        .build();
-    let client = Client::from_conf(config);
-
-    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
+    let client = s3::get_s3_client().await;
+    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
 
     let connection = pool
         .get()
@@ -182,13 +171,8 @@ async fn delete_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let sdk_config = aws_config::load_defaults(BehaviorVersion::latest()).await;
-    let config = aws_sdk_s3::config::Builder::from(&sdk_config)
-        .accelerate(true)
-        .build();
-    let client = Client::from_conf(config);
-
-    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
+    let client = s3::get_s3_client().await;
+    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
 
     let connection = pool
         .get()

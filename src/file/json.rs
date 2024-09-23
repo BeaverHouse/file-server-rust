@@ -52,8 +52,11 @@ pub(crate) async fn read_json(
         .key(file_path)
         .send()
         .await
-        .map_err(|_err| FileServerError::S3Error {
-            message: _err.to_string(),
+        .map_err(|_err| {
+            dbg!(&_err);
+            FileServerError::S3Error {
+                message: _err.to_string(),
+            }
         })?;
 
     let body = object

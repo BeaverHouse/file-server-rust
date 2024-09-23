@@ -45,14 +45,7 @@ Used [Actix Web] & [utoipa] for web framework and Swagger UI.
 First, set up the environment variables.
 
 ```
-BASE_DIR=
-
-PG__USER=
-PG__PASSWORD=
-PG__HOST=
-PG__PORT=
-PG__DBNAME=
-PG__POOL_MAX_SIZE=
+PG__URL=
 
 API_KEY=
 ```
