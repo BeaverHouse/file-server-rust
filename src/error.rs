@@ -24,9 +24,6 @@ pub enum FileServerError {
     #[display("File not found with ID: {}", id)]
     FileNotFound { id: String },
 
-    #[display("Folder create error: {}", path)]
-    FolderCreateError { path: String },
-
     #[display("Serialization error")]
     SerializationError,
 
@@ -61,7 +58,6 @@ impl error::ResponseError for FileServerError {
             FileServerError::FileWriteError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::FileDeleteError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::FileNotFound { .. } => StatusCode::BAD_REQUEST,
-            FileServerError::FolderCreateError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::SerializationError => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::DeserializationError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::PostgresDBError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
