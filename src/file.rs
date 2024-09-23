@@ -51,7 +51,7 @@ async fn upload_alarms(
         .build();
     let client = Client::from_conf(config);
 
-    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
 
     let connection = pool
         .get()
@@ -131,7 +131,7 @@ async fn download_alarms(
         .build();
     let client = Client::from_conf(config);
 
-    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
 
     let connection = pool
         .get()
@@ -188,7 +188,7 @@ async fn delete_alarms(
         .build();
     let client = Client::from_conf(config);
 
-    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+    let bucket_name = env::var("AWS_S3_BUCKET").expect("AWS_S3_BUCKET must be set");
 
     let connection = pool
         .get()
