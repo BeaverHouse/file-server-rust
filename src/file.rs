@@ -1,5 +1,4 @@
 mod s3_json;
-mod s3;
 mod utils;
 
 use std::env;
@@ -44,8 +43,7 @@ async fn upload_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let client = s3::get_s3_client().await;
-    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
+    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
 
     let connection = pool
         .get()
@@ -68,8 +66,8 @@ async fn upload_alarms(
     let json =
         serde_json::to_string(&body.alarms).map_err(|_| FileServerError::SerializationError)?;
     let file_name = format!("alarms_{}_{}.json", id, utils::get_epoch_ms());
-    let new_path = format!("{}/{}", constants::ALARM_TABLE_NAME.to_string(), &file_name);
-    let _ = s3_json::save_json(&client, &bucket_name, &new_path, json).await;
+    let new_path = format!("family/{}/{}", constants::ALARM_TABLE_NAME.to_string(), &file_name);
+    let _ = s3_json::save_json(&endpoint, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
         .await
@@ -90,7 +88,7 @@ async fn upload_alarms(
             .map_err(|err| FileServerError::PostgresDBError {
                 message: err.to_string(),
             })?;
-        let _ = s3_json::delete_json(&client, &bucket_name, &old_path.to_string()).await;
+        let _ = s3_json::delete_json(&endpoint, &old_path.to_string()).await;
     }
 
     Ok(HttpResponse::Ok().json(StringResponse {
@@ -119,8 +117,7 @@ async fn download_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let client = s3::get_s3_client().await;
-    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
+    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
 
     let connection = pool
         .get()
@@ -141,7 +138,7 @@ async fn download_alarms(
 
     log::info!("Download alarms - ID: {}", id);
 
-    let json_str = s3_json::read_json(&client, &bucket_name, &file_path).await?;
+    let json_str = s3_json::read_json(&endpoint, &file_path).await?;
     let alarms: Vec<Alarm> = serde_json::from_str(&json_str)
         .map_err(|_err| FileServerError::DeserializationError { json_str })?;
 
@@ -171,8 +168,7 @@ async fn delete_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let client = s3::get_s3_client().await;
-    let bucket_name = env::var("S3_BUCKET").expect("S3_BUCKET must be set");
+    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
 
     let connection = pool
         .get()
@@ -199,7 +195,7 @@ async fn delete_alarms(
             message: err.to_string(),
         })?;
 
-    let _ = s3_json::delete_json(&client, &bucket_name, &file_path.to_string()).await;
+    let _ = s3_json::delete_json(&endpoint, &file_path.to_string()).await;
 
     Ok(HttpResponse::Ok().json(BaseResponse {
         status: 200,

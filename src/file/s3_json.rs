@@ -1,4 +1,4 @@
-use aws_sdk_s3::{primitives::ByteStream, Client};
+use reqwest::Client;
 
 use crate::error::FileServerError;
 
@@ -6,24 +6,26 @@ use crate::error::FileServerError;
 ///
 /// # Arguments
 ///
-/// * `client` - Oracle S3 client
-/// * `bucket_name` - Bucket name
+/// * `endpoint` - Oracle S3 endpoint
 /// * `file_path` - File path
 /// * `json` - JSON content in string format
 pub(crate) async fn save_json(
-    client: &Client,
-    bucket_name: &String,
+    endpoint: &String,
     file_path: &String,
     json: String,
 ) -> Result<(), FileServerError> {
-    client
-        .put_object()
-        .bucket(bucket_name)
-        .key(file_path)
-        .body(ByteStream::from(json.into_bytes()))
+    if file_path.ends_with(".json") == false {
+        return Err(FileServerError::FileFormatInvalid {
+            path: file_path.to_string(),
+        });
+    }
+    let url = format!("{}/o/{}", endpoint, file_path);
+    let _ = Client::new()
+        .put(url)
+        .body(json.into_bytes())
         .send()
         .await
-        .map_err(|_err| FileServerError::S3Error {
+        .map_err(|_err| FileServerError::ObjectStorageError {
             message: _err.to_string(),
         })?;
 
@@ -34,41 +36,39 @@ pub(crate) async fn save_json(
 ///
 /// # Arguments
 ///
-/// * `client` - Oracle S3 client
-/// * `bucket_name` - Bucket name
+/// * `endpoint` - Oracle S3 endpoint
 /// * `file_path` - File path
 ///
 /// # Returns
 ///
 /// * `String` - JSON content in string format
 pub(crate) async fn read_json(
-    client: &Client,
-    bucket_name: &String,
+    endpoint: &String,
     file_path: &String,
 ) -> Result<String, FileServerError> {
-    let object = client
-        .get_object()
-        .bucket(bucket_name)
-        .key(file_path)
+    if file_path.ends_with(".json") == false {
+        return Err(FileServerError::FileFormatInvalid {
+            path: file_path.to_string(),
+        });
+    }
+    let url = format!("{}/o/{}", endpoint, file_path);
+    let object = Client::new()
+        .get(&url)
         .send()
         .await
-        .map_err(|_err| {
-            dbg!(&_err);
-            FileServerError::S3Error {
-                message: _err.to_string(),
-            }
+        .map_err(|_err| FileServerError::ObjectStorageError {
+            message: _err.to_string(),
         })?;
 
     let body = object
-        .body
-        .collect()
+        .bytes()
         .await
-        .map_err(|_err| FileServerError::S3Error {
+        .map_err(|_err| FileServerError::ObjectStorageError {
             message: _err.to_string(),
         })?;
 
     Ok(
-        String::from_utf8(body.to_vec()).map_err(|_err| FileServerError::S3Error {
+        String::from_utf8(body.to_vec()).map_err(|_err| FileServerError::ObjectStorageError {
             message: _err.to_string(),
         })?,
     )
@@ -78,23 +78,21 @@ pub(crate) async fn read_json(
 ///
 /// # Arguments
 ///
-/// * `client` - Oracle S3 client
-/// * `bucket_name` - Bucket name
+/// * `endpoint` - Oracle S3 endpoint
 /// * `file_path` - File path
 pub(crate) async fn delete_json(
-    client: &Client,
-    bucket_name: &String,
+    endpoint: &String,
     file_path: &String,
 ) -> Result<(), FileServerError> {
-    let _ = client
-        .delete_object()
-        .bucket(bucket_name)
-        .key(file_path)
+    let url = format!("{}/o/{}", endpoint, file_path);
+    println!("Delete URL: {}", url);
+    let _ = Client::new()
+        .delete(url)
         .send()
         .await
-        .map_err(|_err| FileServerError::S3Error {
+        .map_err(|_err| FileServerError::ObjectStorageError {
             message: _err.to_string(),
-        });
+        })?;
 
     Ok(())
 }

@@ -12,6 +12,9 @@ pub enum FileServerError {
     #[display("File not found with ID: {}", id)]
     FileNotFound { id: String },
 
+    #[display("File format is invalid: {}", path)]
+    FileFormatInvalid { path: String },
+
     #[display("Serialization error")]
     SerializationError,
 
@@ -22,7 +25,7 @@ pub enum FileServerError {
     PostgresDBError { message: String },
 
     #[display("S3 error: {}", message)]
-    S3Error { message: String },
+    ObjectStorageError { message: String },
 
     #[display("User is not registered")]
     NotRegistered,
@@ -45,10 +48,11 @@ impl error::ResponseError for FileServerError {
     fn status_code(&self) -> StatusCode {
         match *self {
             FileServerError::FileNotFound { .. } => StatusCode::BAD_REQUEST,
+            FileServerError::FileFormatInvalid { .. } => StatusCode::BAD_REQUEST,
             FileServerError::SerializationError => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::DeserializationError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::PostgresDBError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            FileServerError::S3Error { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            FileServerError::ObjectStorageError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::NotRegistered => StatusCode::BAD_REQUEST,
             FileServerError::Unauthorized { .. } => StatusCode::UNAUTHORIZED,
         }
