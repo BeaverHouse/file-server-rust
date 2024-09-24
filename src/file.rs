@@ -68,7 +68,7 @@ async fn upload_alarms(
     let json =
         serde_json::to_string(&body.alarms).map_err(|_| FileServerError::SerializationError)?;
     let file_name = format!("alarms_{}_{}.json", id, utils::get_epoch_ms());
-    let new_path = utils::get_file_path(constants::ALARM_TABLE_NAME.to_string(), &file_name);
+    let new_path = format!("{}/{}", constants::ALARM_TABLE_NAME.to_string(), &file_name);
     let _ = json::save_json(&client, &bucket_name, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
