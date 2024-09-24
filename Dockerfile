@@ -9,6 +9,8 @@ COPY Cargo.toml .
 RUN mkdir src
 COPY src src
 RUN apt update && apt upgrade -y
+RUN apt install pkg-config
+RUN apt install libudev-dev
 RUN apt install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
 
 RUN rustup target add aarch64-unknown-linux-gnu
