@@ -88,7 +88,6 @@ async fn upload_alarms(
             .map_err(|err| FileServerError::PostgresDBError {
                 message: err.to_string(),
             })?;
-        let _ = s3_json::delete_json(&endpoint, &old_path.to_string()).await;
     }
 
     Ok(HttpResponse::Ok().json(StringResponse {
@@ -168,8 +167,6 @@ async fn delete_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
-
     let connection = pool
         .get()
         .await
@@ -194,8 +191,6 @@ async fn delete_alarms(
         .map_err(|err| FileServerError::PostgresDBError {
             message: err.to_string(),
         })?;
-
-    let _ = s3_json::delete_json(&endpoint, &file_path.to_string()).await;
 
     Ok(HttpResponse::Ok().json(BaseResponse {
         status: 200,

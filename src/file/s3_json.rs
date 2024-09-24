@@ -74,25 +74,3 @@ pub(crate) async fn read_json(
     )
 }
 
-/// Delete a JSON file from the S3 bucket
-///
-/// # Arguments
-///
-/// * `endpoint` - Oracle S3 endpoint
-/// * `file_path` - File path
-pub(crate) async fn delete_json(
-    endpoint: &String,
-    file_path: &String,
-) -> Result<(), FileServerError> {
-    let url = format!("{}/o/{}", endpoint, file_path);
-    println!("Delete URL: {}", url);
-    let _ = Client::new()
-        .delete(url)
-        .send()
-        .await
-        .map_err(|_err| FileServerError::ObjectStorageError {
-            message: _err.to_string(),
-        })?;
-
-    Ok(())
-}
