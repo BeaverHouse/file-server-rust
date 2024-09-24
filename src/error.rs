@@ -9,23 +9,11 @@ use crate::models::BaseResponse;
 
 #[derive(Debug, Display, Error)]
 pub enum FileServerError {
-    #[display("File create error: {}", path)]
-    FileCreateError { path: String },
-
-    #[display("File read error: {}", path)]
-    FileReadError { path: String },
-
-    #[display("File write error: {}", path)]
-    FileWriteError { path: String },
-
-    #[display("File delete error: {}", path)]
-    FileDeleteError { path: String },
-
     #[display("File not found with ID: {}", id)]
     FileNotFound { id: String },
 
-    #[display("Folder create error: {}", path)]
-    FolderCreateError { path: String },
+    #[display("File format is invalid: {}", path)]
+    FileFormatInvalid { path: String },
 
     #[display("Serialization error")]
     SerializationError,
@@ -35,6 +23,9 @@ pub enum FileServerError {
 
     #[display("PostgreSQL DB error: {}", message)]
     PostgresDBError { message: String },
+
+    #[display("S3 error: {}", message)]
+    ObjectStorageError { message: String },
 
     #[display("User is not registered")]
     NotRegistered,
@@ -56,15 +47,12 @@ impl error::ResponseError for FileServerError {
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            FileServerError::FileCreateError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            FileServerError::FileReadError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            FileServerError::FileWriteError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            FileServerError::FileDeleteError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::FileNotFound { .. } => StatusCode::BAD_REQUEST,
-            FileServerError::FolderCreateError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            FileServerError::FileFormatInvalid { .. } => StatusCode::BAD_REQUEST,
             FileServerError::SerializationError => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::DeserializationError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::PostgresDBError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
+            FileServerError::ObjectStorageError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::NotRegistered => StatusCode::BAD_REQUEST,
             FileServerError::Unauthorized { .. } => StatusCode::UNAUTHORIZED,
         }

@@ -42,19 +42,15 @@ Used [Actix Web] & [utoipa] for web framework and Swagger UI.
 
 ## On local development
 
-First, set up the environment variables.
+First, set up the environment variables.  
+You need to change the variables if you do not use pre-authenticated request or use other storages like AWS S3, 
 
 ```
-BASE_DIR=
+PG__URL=<Your PostgreSQL connection string>
 
-PG__USER=
-PG__PASSWORD=
-PG__HOST=
-PG__PORT=
-PG__DBNAME=
-PG__POOL_MAX_SIZE=
+ORACLE_OBJ_STORAGE_ENDPOINT=<Your Oracle Object Storage pre-authenticated request URL>
 
-API_KEY=
+API_KEY=RSF202410@$
 ```
 
 Then run this command in the terminal:

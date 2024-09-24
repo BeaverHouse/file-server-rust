@@ -1,5 +1,7 @@
-mod json;
+mod s3_json;
 mod utils;
+
+use std::env;
 
 use actix_web::{delete, get, post, web, HttpResponse, Scope};
 use deadpool_postgres::Pool;
@@ -41,6 +43,8 @@ async fn upload_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
+    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
+
     let connection = pool
         .get()
         .await
@@ -62,8 +66,8 @@ async fn upload_alarms(
     let json =
         serde_json::to_string(&body.alarms).map_err(|_| FileServerError::SerializationError)?;
     let file_name = format!("alarms_{}_{}.json", id, utils::get_epoch_ms());
-    let new_path = utils::get_file_path(constants::ALARM_TABLE_NAME.to_string(), &file_name);
-    let _ = json::save_json(&new_path, json).await;
+    let new_path = format!("family/{}/{}", constants::ALARM_TABLE_NAME.to_string(), &file_name);
+    let _ = s3_json::save_json(&endpoint, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
         .await
@@ -84,7 +88,6 @@ async fn upload_alarms(
             .map_err(|err| FileServerError::PostgresDBError {
                 message: err.to_string(),
             })?;
-        let _ = json::delete_json(&old_path.to_string()).await;
     }
 
     Ok(HttpResponse::Ok().json(StringResponse {
@@ -113,6 +116,8 @@ async fn download_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
+    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
+
     let connection = pool
         .get()
         .await
@@ -132,7 +137,7 @@ async fn download_alarms(
 
     log::info!("Download alarms - ID: {}", id);
 
-    let json_str = json::read_json(&file_path).await?;
+    let json_str = s3_json::read_json(&endpoint, &file_path).await?;
     let alarms: Vec<Alarm> = serde_json::from_str(&json_str)
         .map_err(|_err| FileServerError::DeserializationError { json_str })?;
 
@@ -186,8 +191,6 @@ async fn delete_alarms(
         .map_err(|err| FileServerError::PostgresDBError {
             message: err.to_string(),
         })?;
-
-    let _ = json::delete_json(&file_path.to_string()).await;
 
     Ok(HttpResponse::Ok().json(BaseResponse {
         status: 200,
