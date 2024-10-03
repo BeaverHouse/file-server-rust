@@ -43,7 +43,8 @@ async fn upload_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
+    let endpoint =
+        env::var("ORACLE_FAMILY_RW_ENDPOINT").expect("ORACLE_FAMILY_RW_ENDPOINT must be set");
 
     let connection = pool
         .get()
@@ -66,7 +67,11 @@ async fn upload_alarms(
     let json =
         serde_json::to_string(&body.alarms).map_err(|_| FileServerError::SerializationError)?;
     let file_name = format!("alarms_{}_{}.json", id, utils::get_epoch_ms());
-    let new_path = format!("family/{}/{}", constants::ALARM_TABLE_NAME.to_string(), &file_name);
+    let new_path = format!(
+        "family/{}/{}",
+        constants::ALARM_TABLE_NAME.to_string(),
+        &file_name
+    );
     let _ = s3_json::save_json(&endpoint, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
@@ -116,7 +121,8 @@ async fn download_alarms(
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
-    let endpoint = env::var("ORACLE_OBJ_STORAGE_ENDPOINT").expect("ORACLE_OBJ_STORAGE_ENDPOINT must be set");
+    let endpoint =
+        env::var("ORACLE_FAMILY_RW_ENDPOINT").expect("ORACLE_FAMILY_RW_ENDPOINT must be set");
 
     let connection = pool
         .get()
