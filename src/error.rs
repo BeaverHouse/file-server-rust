@@ -15,6 +15,9 @@ pub enum FileServerError {
     #[display("File format is invalid: {}", path)]
     FileFormatInvalid { path: String },
 
+    #[display("Failed to read image data: {}", message)]
+    ImageParsingError { message: String },
+
     #[display("Serialization error")]
     SerializationError,
 
@@ -49,6 +52,7 @@ impl error::ResponseError for FileServerError {
         match *self {
             FileServerError::FileNotFound { .. } => StatusCode::BAD_REQUEST,
             FileServerError::FileFormatInvalid { .. } => StatusCode::BAD_REQUEST,
+            FileServerError::ImageParsingError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::SerializationError => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::DeserializationError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             FileServerError::PostgresDBError { .. } => StatusCode::INTERNAL_SERVER_ERROR,

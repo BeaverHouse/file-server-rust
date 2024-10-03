@@ -36,6 +36,7 @@ use utoipa_swagger_ui::SwaggerUi;
         file::upload_alarms,
         file::download_alarms,
         file::delete_alarms,
+        file::upload_aecheck_image,
         healthcheck
     ),
     components(schemas(Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse)),

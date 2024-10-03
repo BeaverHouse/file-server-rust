@@ -1,8 +1,10 @@
-mod s3_json;
+mod storage_image;
+mod storage_json;
 mod utils;
 
-use std::env;
+use std::{env, io::Read};
 
+use actix_multipart::form::MultipartForm;
 use actix_web::{delete, get, post, web, HttpResponse, Scope};
 use deadpool_postgres::Pool;
 use log;
@@ -12,7 +14,7 @@ use crate::{
     constants, database,
     error::FileServerError,
     guard::check_api_key,
-    models::{Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse},
+    models::{Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadForm},
 };
 
 pub fn file_handler() -> Scope {
@@ -20,6 +22,7 @@ pub fn file_handler() -> Scope {
         .service(upload_alarms)
         .service(download_alarms)
         .service(delete_alarms)
+        .service(upload_aecheck_image)
 }
 
 #[utoipa::path(
@@ -72,7 +75,7 @@ async fn upload_alarms(
         constants::ALARM_TABLE_NAME.to_string(),
         &file_name
     );
-    let _ = s3_json::save_json(&endpoint, &new_path, json).await;
+    let _ = storage_json::save_json(&endpoint, &new_path, json).await;
 
     let old_path = database::alarms::get_alarm_file_path(&connection, id.to_string())
         .await
@@ -143,7 +146,7 @@ async fn download_alarms(
 
     log::info!("Download alarms - ID: {}", id);
 
-    let json_str = s3_json::read_json(&endpoint, &file_path).await?;
+    let json_str = storage_json::read_json(&endpoint, &file_path).await?;
     let alarms: Vec<Alarm> = serde_json::from_str(&json_str)
         .map_err(|_err| FileServerError::DeserializationError { json_str })?;
 
@@ -201,5 +204,50 @@ async fn delete_alarms(
     Ok(HttpResponse::Ok().json(BaseResponse {
         status: 200,
         message: "Delete alarms successfully".to_string(),
+    }))
+}
+
+#[utoipa::path(
+    post,
+    tag = "File",
+    path = "/file/aecheck",
+    request_body(content = UpdateForm, content_type = "multipart/form-data"),
+    responses(
+        (status = 200, description = "Upload image successfully", body = StringResponse),
+    ),
+    security(
+        ("bearerAuth" = [])
+    )
+)]
+#[post("/aecheck")]
+async fn upload_aecheck_image(
+    _req: actix_web::HttpRequest,
+    MultipartForm(mut form): MultipartForm<UploadForm>,
+) -> Result<HttpResponse, FileServerError> {
+    check_api_key(&_req)?;
+
+    let endpoint =
+        env::var("ORACLE_AECHECK_W_ENDPOINT").expect("ORACLE_AECHECK_W_ENDPOINT must be set");
+
+    let mut img_bytes: Vec<u8> = Vec::new();
+    let _ = form.file.file.read_to_end(&mut img_bytes).map_err(|_err| {
+        FileServerError::ImageParsingError {
+            message: _err.to_string(),
+        }
+    });
+
+    let url = storage_image::save_aecheck_image(&endpoint, &img_bytes).await?;
+
+    println!(
+        "Uploaded file to {}, with size: {}\ntemporary file ({}) was deleted\n",
+        url,
+        form.file.size,
+        form.file.file.path().display(),
+    );
+
+    Ok(HttpResponse::Ok().json(StringResponse {
+        status: 200,
+        message: "Upload image successfully".to_string(),
+        data: url,
     }))
 }
