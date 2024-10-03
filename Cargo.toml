@@ -1,6 +1,6 @@
 [package]
 name = "file-server-rust"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
@@ -11,6 +11,7 @@ serde_json = "1"
 # HTTP server
 actix-web = "4.9.0"
 actix-web-httpauth = "0.8.2"
+actix-multipart = "0.7.2"
 derive_more = { version = "1.0.0", features = ["full"] }
 
 # Logging
@@ -26,8 +27,9 @@ utoipa-swagger-ui = { version = "7.1.0", features = ["actix-web"] }
 dotenvy = "0.15.7"
 confik = "0.11.7"
 
-# encryption
+# encryption & unique ID
 hex = "0.4.3"
+uuid = { version = "1.10.0", features = ["v4"] }
 
 # Database
 oracle = "0.6.2"
@@ -36,5 +38,5 @@ tokio-pg-mapper = "0.2.0"
 tokio-pg-mapper-derive = "0.2.0"
 tokio-postgres = "0.7.12"
 
-reqwest = "0.12.7"
+reqwest = "0.12.8"
 openssl = { version = "0.10.66", features = ["vendored"] }
