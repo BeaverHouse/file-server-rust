@@ -102,6 +102,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::PayloadConfig::new(constants::MAX_PAYLOAD_SIZE))
+            .app_data(web::JsonConfig::default().limit(constants::MAX_PAYLOAD_SIZE))
             .wrap(Logger::new("%a %t %r - %s"))
             .wrap(cors)
             .service(
