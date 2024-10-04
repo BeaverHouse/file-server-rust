@@ -1,4 +1,3 @@
-use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 use serde::{Deserialize, Serialize};
 use tokio_pg_mapper_derive::PostgresMapper;
 use utoipa::ToSchema;
@@ -44,9 +43,7 @@ pub struct BaseResponse {
 }
 
 // https://github.com/juhaku/utoipa/issues/740#issuecomment-2163105436
-#[derive(Debug, MultipartForm, ToSchema)]
-pub struct UploadForm {
-    #[schema(value_type = String, format = Binary)]
-    #[multipart(limit = "10MB")]
-    pub file: TempFile,
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct UploadImageRequest {
+    pub file: String,
 }
