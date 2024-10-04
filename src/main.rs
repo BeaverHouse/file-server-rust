@@ -7,11 +7,12 @@ mod models;
 
 use std::net::Ipv4Addr;
 
+use actix_cors::Cors;
 use database::config::PostgresConfig;
 use models::{Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse};
 
 use actix_web::{
-    get,
+    get, http,
     middleware::Logger,
     web::{self},
     App, HttpResponse, HttpServer, Responder,
@@ -90,9 +91,18 @@ async fn main() -> std::io::Result<()> {
     let pool = config.pg.create_pool(None, NoTls).unwrap();
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("https://aecheck.com")
+            .allowed_origin("http://localhost:5173")
+            .allowed_methods(vec!["GET", "POST", "DELETE"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(Logger::new("%a %t %r - %s"))
+            .wrap(cors)
             .service(
                 SwaggerUi::new("/file/docs/{_:.*}")
                     .url("/file/api-doc/openapi.json", ApiDoc::openapi()),
