@@ -44,6 +44,6 @@ pub struct BaseResponse {
 
 // https://github.com/juhaku/utoipa/issues/740#issuecomment-2163105436
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
-pub struct UploadFileRequest {
+pub struct UploadImageRequest {
     pub file: String,
 }

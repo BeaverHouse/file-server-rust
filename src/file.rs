@@ -15,7 +15,7 @@ use crate::{
     error::FileServerError,
     guard::check_api_key,
     models::{
-        Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadFileRequest,
+        Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadImageRequest,
     },
 };
 
@@ -223,7 +223,7 @@ async fn delete_alarms(
 #[post("/aecheck")]
 async fn upload_aecheck_image(
     _req: actix_web::HttpRequest,
-    body: web::Json<UploadFileRequest>,
+    body: web::Json<UploadImageRequest>,
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
