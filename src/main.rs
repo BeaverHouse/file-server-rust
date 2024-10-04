@@ -9,7 +9,9 @@ use std::net::Ipv4Addr;
 
 use actix_cors::Cors;
 use database::config::PostgresConfig;
-use models::{Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse};
+use models::{
+    Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadFileRequest,
+};
 
 use actix_web::{
     get, http,
@@ -40,7 +42,7 @@ use utoipa_swagger_ui::SwaggerUi;
         file::upload_aecheck_image,
         healthcheck
     ),
-    components(schemas(Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse)),
+    components(schemas(Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadFileRequest)),
     modifiers(&SecurityAddon)
 )]
 struct ApiDoc;

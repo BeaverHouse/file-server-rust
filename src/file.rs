@@ -2,10 +2,10 @@ mod storage_image;
 mod storage_json;
 mod utils;
 
-use std::{env, io::Read};
+use std::env;
 
-use actix_multipart::form::MultipartForm;
 use actix_web::{delete, get, post, web, HttpResponse, Scope};
+use data_url::DataUrl;
 use deadpool_postgres::Pool;
 use log;
 use serde_json;
@@ -14,7 +14,9 @@ use crate::{
     constants, database,
     error::FileServerError,
     guard::check_api_key,
-    models::{Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadForm},
+    models::{
+        Alarm, AlarmList, AlarmListResponse, BaseResponse, StringResponse, UploadFileRequest,
+    },
 };
 
 pub fn file_handler() -> Scope {
@@ -211,7 +213,6 @@ async fn delete_alarms(
     post,
     tag = "File",
     path = "/file/aecheck",
-    request_body(content = UpdateForm, content_type = "multipart/form-data"),
     responses(
         (status = 200, description = "Upload image successfully", body = StringResponse),
     ),
@@ -222,28 +223,27 @@ async fn delete_alarms(
 #[post("/aecheck")]
 async fn upload_aecheck_image(
     _req: actix_web::HttpRequest,
-    MultipartForm(mut form): MultipartForm<UploadForm>,
+    body: web::Json<UploadFileRequest>,
 ) -> Result<HttpResponse, FileServerError> {
     check_api_key(&_req)?;
 
     let endpoint =
         env::var("ORACLE_AECHECK_W_ENDPOINT").expect("ORACLE_AECHECK_W_ENDPOINT must be set");
 
-    let mut img_bytes: Vec<u8> = Vec::new();
-    let _ = form.file.file.read_to_end(&mut img_bytes).map_err(|_err| {
-        FileServerError::ImageParsingError {
+    let data_url =
+        DataUrl::process(&body.file).map_err(|_err| FileServerError::ImageParsingError {
             message: _err.to_string(),
-        }
-    });
+        })?;
+    let (img_bytes, _) =
+        data_url
+            .decode_to_vec()
+            .map_err(|_err| FileServerError::ImageParsingError {
+                message: _err.to_string(),
+            })?;
 
     let url = storage_image::save_aecheck_image(&endpoint, &img_bytes).await?;
 
-    println!(
-        "Uploaded file to {}, with size: {}\ntemporary file ({}) was deleted\n",
-        url,
-        form.file.size,
-        form.file.file.path().display(),
-    );
+    log::info!("Upload image - URL: {}", url);
 
     Ok(HttpResponse::Ok().json(StringResponse {
         status: 200,

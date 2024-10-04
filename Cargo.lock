@@ -666,6 +666,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "data-url"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c297a1c74b71ae29df00c3e22dd9534821d60eb9af5a0192823fa2acea70c2a"
+
+[[package]]
 name = "deadpool"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -863,6 +869,7 @@ dependencies = [
  "actix-web",
  "actix-web-httpauth",
  "confik",
+ "data-url",
  "deadpool-postgres",
  "derive_more 1.0.0",
  "dotenvy",
