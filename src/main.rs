@@ -97,9 +97,13 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("https://dev.aecheck.com")
             .allowed_origin("https://aecheck.com")
             .allowed_origin("http://localhost:5173")
-            .allowed_methods(vec!["GET", "POST", "DELETE"])
-            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-            .allowed_header(http::header::CONTENT_TYPE)
+            .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::ACCEPT,
+                http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                http::header::CONTENT_TYPE,
+            ])
             .max_age(3600);
 
         App::new()
