@@ -35,5 +35,5 @@ pub(crate) async fn save_aecheck_image(
             message: _err.to_string(),
         })?;
 
-    Ok(format!("https://cdn.haulrest.me/{}", file_path))
+    Ok(format!("https://objectstorage.ap-chuncheon-1.oraclecloud.com/p/kZNz1CCojL7rRFkNrpihiudQViOGdkUHFrldnh8pGUzpJtA_IRbgSJ0hSovJQ2p2/n/axpzmkynkrby/b/austin-oracle-bucket/o/{}", file_path))
 }
