@@ -1,8 +1,8 @@
 use reqwest::Client;
 use uuid::Uuid;
+use std::env;
 
 use crate::error::FileServerError;
-
 use super::utils::get_epoch_ms;
 
 /// Save an image file to the S3 bucket
