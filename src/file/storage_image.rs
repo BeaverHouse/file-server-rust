@@ -26,6 +26,9 @@ pub(crate) async fn save_aecheck_image(
     );
     let url = format!("{}/o/{}", endpoint, file_path);
 
+    let cdn_endpoint =
+        env::var("ORACLE_AECHECK_R_ENDPOINT").expect("ORACLE_AECHECK_R_ENDPOINT must be set");
+
     let _ = Client::new()
         .put(url)
         .body(img_bytes.clone())
@@ -35,5 +38,5 @@ pub(crate) async fn save_aecheck_image(
             message: _err.to_string(),
         })?;
 
-    Ok(format!("https://objectstorage.ap-chuncheon-1.oraclecloud.com/p/kZNz1CCojL7rRFkNrpihiudQViOGdkUHFrldnh8pGUzpJtA_IRbgSJ0hSovJQ2p2/n/axpzmkynkrby/b/austin-oracle-bucket/o/{}", file_path))
+    Ok(format!("{}/o/{}", cdn_endpoint, file_path))
 }
