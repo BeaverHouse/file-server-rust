@@ -1,0 +1,20 @@
+labels: ["Question"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submission
+      description: Please confirm and check all the following options.
+      options:
+        - label: I already checked that the question is not a duplicate.
+          required: true
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: "Content"
+      placeholder: "Write your content as detailed as possible."
+    validations:
+      required: true 

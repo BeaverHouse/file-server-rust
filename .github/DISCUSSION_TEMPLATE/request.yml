@@ -1,0 +1,37 @@
+labels: ["Request"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submission
+      description: Please confirm and check all the following options.
+      options:
+        - label: If you want to report a bug or security issue, please use the GitHub Issue.
+          required: true
+        - label: I already checked that the request is not a duplicate.
+          required: true
+        - label: |
+            I already checked that the request is directly related to this repository,
+            and it is not about the other dependencies or external resources.
+          required: true
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: "What is your request mainly about?"
+      options:
+        - "Feature request"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: "Content"
+      placeholder: "Write your request as detailed as possible."
+    validations:
+      required: true 
